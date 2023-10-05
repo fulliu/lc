@@ -65,6 +65,7 @@ Example:
 ```
 python test.py --config configs/glmo.yaml --obj 1 --weight assets/models/glmo/01/model.pth --output output
 ```
-
+## models:
+[Google drive](https://drive.google.com/drive/folders/1twkJ4oNdBAFXA8rMpv9uzwFG0bI5MxPt?usp=drive_link)
 
 
