@@ -1,0 +1,81 @@
+exp_name: gsplmo
+debug: false
+cache_dir: '.cache'
+obj_ids:
+- 1
+sym_aware: false
+sparse_cnt: 16
+fps: assets/fps/lmo.pkl
+dataloader:
+  num_workers: 8
+  batch_size: 32
+train:
+  num_epochs: 80
+  test_every: 5
+optimizer:
+  type: Ranger
+  lr: 0.0001
+  wd: 0.0001
+scheduler:
+  name: flat_and_anneal
+  anneal_method: cosine
+  warmup_method: linear
+  anneal_point: 0.72
+  rel_steps:
+  - 0.5
+  - 0.75
+  warmup_factor: 0.001
+  warmup_iters: 1000
+  step_gamma: 0.5
+pnp_solver:
+  rel_reproj_err: false
+  solvers:
+  - ransac
+  - weighted
+train_dataset:
+  name: lmo
+  bg_dir: datasets/VOCdevkit/VOC2012/JPEGImages
+  dataset_root: datasets/BOP_DATASETS/lmo
+  list_files:
+  - assets/image_lists/lmo/lmo_real.txt
+  - assets/image_lists/lmo/lmo_train_pbr.txt
+  net_input_wh:
+  - 256
+  - 256
+  net_output_wh:
+  - 64
+  - 64
+  pixel_aug_prob: 0.8
+  rotate_prob: 1
+  switch_bg_prob: 0.5
+  visib_frac: 0.3
+  dzi_scale_ratio: 0.25
+  dzi_shift_ratio: 0.25
+  dzi_pad_scale: 1.5
+test_dataset:
+  name: lmo
+  dataset_root: datasets/BOP_DATASETS/lmo
+  detection: assets/detection_results/lmo/faster_R50_FPN_AugCosyAAE_HalfAnchor_lmo_pbr_lmo_fuse_real_all_8e_test_480x640.json
+  visib_frac: 0.0
+  list_files:
+  - assets/image_lists/lmo/lmo_test.txt
+  net_input_wh:
+  - 256
+  - 256
+  net_output_wh:
+  - 64
+  - 64
+  dzi_pad_scale: 1.5
+model:
+  net_name: cdpn_resnet
+  net_config:
+    back_layers_num: 34
+    concat: false
+loss:
+  pose_loss_cfg:
+    type: cov
+    clip_weight_grad: true
+  pose_loss_start_step: 4000
+  pose_loss_start_epoch: 1
+  w_loss_kpts: 1
+  w_loss_pose: 0.7

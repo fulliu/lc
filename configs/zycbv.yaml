@@ -1,0 +1,84 @@
+exp_name: zycbv
+debug: false
+cache_dir: '.cache'
+obj_ids:
+- 1
+sym_aware: false
+max_bit_cnt: 7
+transform_model: true
+transform_path: 'assets/ycbv_models_xform/models_xform.json'
+black_background: true
+net_input_wh:
+- 256
+- 256
+net_output_wh:
+- 128
+- 128
+dataloader:
+  num_workers: 8
+  batch_size: 32
+train:
+  num_steps: 380000
+  test_start: 10000
+  test_every: 2000
+  ckpt_every: 5000
+optimizer:
+  type: adam
+  lr: 0.0002
+  wd: 0.0
+scheduler:
+  name: none
+pnp_solver:
+  seg_thresh: 0.5
+  dense_sample: 1
+  rel_reproj_err: true
+  dense_point_select: quantile_in_mask
+  quantile: 0.2
+  solvers:
+  - weighted_filtered
+train_dataset:
+  name: ycbvposecnn
+  bg_dir: datasets/VOCdevkit/VOC2012/JPEGImages
+  dataset_root: datasets/BOP_DATASETS/ycbv
+  list_files:
+  - assets/image_lists/ycbv/train_real.txt
+  mask_interp: nearest
+  pixel_aug_prob: 0.8
+  rotate_prob: 0
+  switch_bg_prob: 0
+  visib_frac: 0.2
+  dzi_scale_ratio: 0.25
+  dzi_shift_ratio: 0.25
+  dzi_pad_scale: 1.5
+  use_peper_salt: true
+  use_motion_blur: true
+  use_invert: true
+train_dataset_1:
+  name: ycbvposecnn
+  list_files:
+  - assets/image_lists/ycbv/train_pbr.txt
+  ratio: 0.875
+test_dataset:
+  name: ycbvposecnn
+  dataset_root: datasets/BOP_DATASETS/ycbv
+  detection: assets/detection_results/ycbv/fcos_V57eSE_MSx1333_ColorAugAAEWeaker_8e_ycbv_real_pbr_8e_test_keyframe.json
+  visib_frac: 0.0
+  list_files:
+  - assets/image_lists/ycbv/test.txt
+  dzi_pad_scale: 1.5
+model:
+  net_name: zebra_DeepLabV3
+  net_config:
+    back_layers_num: 34
+    output_kernel_size: 1
+    concat: true
+loss:
+  pose_loss_cfg:
+    dense_sample: 3
+    clip_weight_grad: true
+  seg_loss_type: L1
+  pose_loss_start_step: 3000
+  pose_loss_start_epoch: 0
+  w_loss_pose: 0.03
+  w_loss_noc_bin: 3
+  w_loss_seg: 1

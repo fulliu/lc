@@ -1,0 +1,11 @@
+__pycache__/
+output*
+output*/
+.vscode/
+.cache
+
+datasets
+*.pth
+*.so
+*.c
+*.o

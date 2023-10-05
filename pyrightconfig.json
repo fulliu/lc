@@ -1,0 +1,14 @@
+{
+    "exclude": [
+        "**/.git/objects/**",
+        "**/.git/subtree-cache/**",
+        "data",
+        "data/**",
+        "datasets",
+        "datasets/",
+        "datasets/**",
+        "output**/**",
+        "**/data/**",
+        "**/datasets/**"
+    ]
+}
