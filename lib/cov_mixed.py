@@ -39,12 +39,26 @@ def robust_weights_cov(inv_std2d_pred:Tensor, error2d:Tensor, valid_mask:Tensor,
     return weights, cov
 
 
-def jac_update2alter(state:Tensor, xform_fn:Callable[[Tensor], Tensor]):
+def jac_update2alter_jacfwd(state:Tensor, xform_fn:Callable[[Tensor],Tensor]):
+    '''
+    should run faster especially if transformed vector has many dimensions
+    '''
+    zero_update = state.new_zeros((6,),requires_grad=False)
+    jac_fn = functorch.jacfwd(lambda a:xform_fn(nll_pnp_utils.apply_perturb(state.detach(),a)))
+    jac:Tensor = jac_fn(zero_update)
+    return jac
+
+
+def jac_update2alter(state:Tensor, xform_fn:Callable[[Tensor], Tensor], use_jacfwd = False):
+    if use_jacfwd: # default False to maintain original behaviour 
+        return jac_update2alter_jacfwd(state, xform_fn)
+    
     update = state.new_zeros(state.shape[:-1]+(6,),requires_grad=True)
     quat_xyz = nll_pnp_utils.apply_perturb(state.detach(), update)
     xformed_rep = xform_fn(quat_xyz)
 
     outputs = xformed_rep.sum(-2)
+    # slow things down if xformed_rep.shape[-1] is large
     grad_outs = torch.eye(xformed_rep.shape[-1],device=quat_xyz.device, dtype=quat_xyz.dtype)
     jac:Tensor = functorch.vmap(lambda grad_out:torch.autograd.grad(outputs, update, grad_out,\
         retain_graph=False, create_graph=False, allow_unused=True)[0])(grad_outs).permute(1,0,2)    #(*, N, 6)
