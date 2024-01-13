@@ -216,6 +216,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--opts', nargs='+', action=DictAction)
     parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--deterministic', action='store_true')
 
     args = parser.parse_args()
 
@@ -245,10 +246,11 @@ if __name__ == '__main__':
     model = model.to(args.device)
     floatbits.set_black_background(cfg.get('black_background',False))
 
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.use_deterministic_algorithms(mode=True)
-    cv2.setRNGSeed(0)
+    if args.deterministic:
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        torch.use_deterministic_algorithms(mode=True)
+        cv2.setRNGSeed(0)
 
     test_res = test(args, cfg, model, dataloader, evaluator)
 
