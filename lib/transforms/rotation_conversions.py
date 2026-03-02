@@ -49,8 +49,14 @@ def quaternion_to_matrix(quaternions: torch.Tensor) -> torch.Tensor:
     """
     r, i, j, k = torch.unbind(quaternions, -1)
     # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-    two_s = 2.0 / torch.linalg.vector_norm(quaternions, dim=-1)
-
+    # two_s = 2.0 / torch.linalg.vector_norm(quaternions, dim=-1)
+    # bugfix from "two_s = 2.0 / torch.linalg.vector_norm(quaternions, dim=-1)"
+    # as we always use unit quaternions in this repo, the final rotation matrix is not affected.
+    # The calculated matrix derivative will be scaled by 0.5,
+    # making cov_err, linear_err and prior_error have the same scaling.
+    # Fortunately, the final loss has the form: prior_error.log() + 0.5 * (cov_err + linear_err)/prior_error,
+    # making this scaling only a constant bias in the final loss, which will not affect the training.
+    two_s = torch.div(2.0, (quaternions * quaternions).sum(-1))
     o = torch.stack(
         (
             1 - two_s * (j * j + k * k),
